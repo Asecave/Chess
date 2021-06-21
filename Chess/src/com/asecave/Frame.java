@@ -19,7 +19,7 @@ public class Frame extends JPanel implements MouseListener, MouseMotionListener,
 	private JFrame frame;
 	private Game game;
 	private Point point;
-	private boolean drag;
+	private int drag;
 
 	public static void main(String[] args) {
 		new Frame();
@@ -40,6 +40,8 @@ public class Frame extends JPanel implements MouseListener, MouseMotionListener,
 		addMouseWheelListener(this);
 
 		game = new Game();
+		
+		repaint();
 	}
 
 	@Override
@@ -54,11 +56,14 @@ public class Frame extends JPanel implements MouseListener, MouseMotionListener,
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		if (drag) {
-			int dx = e.getX() - point.x;
-			int dy = e.getY() - point.y;
-			point = e.getPoint();
-			game.drag(dx, dy);
+		int dx = e.getX() - point.x;
+		int dy = e.getY() - point.y;
+		point = e.getPoint();
+		if (drag == 1) {
+			game.rightDrag(dx, dy);
+			repaint();
+		} else if (drag == 2) {
+			game.leftHold(e);
 			repaint();
 		}
 	}
@@ -81,15 +86,22 @@ public class Frame extends JPanel implements MouseListener, MouseMotionListener,
 
 	@Override
 	public void mousePressed(MouseEvent e) {
+		point = e.getPoint();
 		if (e.getButton() == MouseEvent.BUTTON3 || e.getButton() == MouseEvent.BUTTON2) {
-			point = e.getPoint();
-			drag = true;
+			drag = 1;
+		} else if (e.getButton() == MouseEvent.BUTTON1) {
+			game.leftDown(e.getPoint());
+			drag = 2;
 		}
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		drag = false;
+		if (drag == 2) {
+			game.leftRelease(e.getPoint());
+		}
+		drag = 0;
+		repaint();
 	}
 
 	@Override
